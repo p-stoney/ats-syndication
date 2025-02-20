@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { jsonRoute } from '../../middleware/jsonRoute';
 import {
-  parseInsertableJobData,
   parseJobId,
+  parseInsertableJobData,
   parseUpdateableJobData,
 } from './dtos';
 import { JobService } from './service';

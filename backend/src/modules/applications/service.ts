@@ -1,40 +1,40 @@
 import { db } from '../../db';
 import { PrismaClientKnownRequestError as PrismaError } from '@prisma/client/runtime/library';
 import { ConflictError, NotFoundError } from '../../utils/errors/http-error';
-import { InsertableJobData, UpdateableJobData } from './dtos';
+import { InsertableApplicationData, UpdateableApplicationData } from './dtos';
 
-export class JobService {
+export class ApplicationService {
   static async findAll() {
-    return db.job.findMany({
+    return db.application.findMany({
       where: { deletedAt: null },
     });
   }
 
   static async findById(id: string) {
-    const job = await db.job.findUnique({ where: { id } });
-    if (!job) {
-      throw new NotFoundError('Job not found');
+    const application = await db.application.findUnique({ where: { id } });
+    if (!application) {
+      throw new NotFoundError('Application not found');
     }
-    return job;
+    return application;
   }
 
-  static async create(data: InsertableJobData) {
+  static async create(data: InsertableApplicationData) {
     try {
-      return await db.job.create({ data });
+      return await db.application.create({ data });
     } catch (error) {
       if (error instanceof PrismaError && error.code === 'P2002') {
-        throw new ConflictError('Job already exists');
+        throw new ConflictError('Application already exists');
       }
       throw error;
     }
   }
 
-  static async update(id: string, data: UpdateableJobData) {
+  static async update(id: string, data: UpdateableApplicationData) {
     try {
-      return await db.job.update({ where: { id }, data });
+      return await db.application.update({ where: { id }, data });
     } catch (error) {
       if (error instanceof PrismaError && error.code === 'P2025') {
-        throw new NotFoundError('Job not found');
+        throw new NotFoundError('Application not found');
       }
       throw error;
     }
@@ -42,13 +42,13 @@ export class JobService {
 
   static async delete(id: string) {
     try {
-      return await db.job.update({
+      return await db.application.update({
         where: { id },
         data: { deletedAt: new Date() },
       });
     } catch (error) {
       if (error instanceof PrismaError && error.code === 'P2025') {
-        throw new NotFoundError('Job not found');
+        throw new NotFoundError('Application not found');
       }
       throw error;
     }
