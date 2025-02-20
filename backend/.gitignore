@@ -2,6 +2,7 @@
 /dist
 /node_modules
 /build
+/node_modules/.cache/prisma/master/acc0b9dd43eb689cbd20c9470515d719db10d0b0/windows
 
 # Logs
 logs
