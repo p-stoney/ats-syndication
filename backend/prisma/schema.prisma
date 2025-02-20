@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------- Enums -----------
+enum Role {
+  CANDIDATE
+  EMPLOYER
+  ADMIN
+}
+
+// ----------- Models -----------
+
+model User {
+  id          String           @id @default(cuid())
+  cognitoSub  String?          @unique
+  email       String?          @unique
+  firstName   String?
+  lastName    String?
+  role        Role             @default(CANDIDATE)
+
+  organizationMemberships OrganizationUser[]
+  jobsPosted  Job[]            @relation("JobsPosted")
+  applications Application[]
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+}
+
+model Organization {
+  id        String             @id @default(cuid())
+  name      String             @unique
+
+  members   OrganizationUser[]
+  jobs      Job[]
+
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  deletedAt DateTime?
+}
+
+model OrganizationUser {
+  id             String         @id @default(cuid())
+  organizationId String
+  userId         String
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  user           User            @relation(fields: [userId], references: [id])
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+
+  @@unique([organizationId, userId])
+}
+
+model Job {
+  id             String             @id @default(cuid())
+
+  organizationId String
+  postedByUserId String
+
+  title          String
+  description    String?
+  location       String?
+  status         String             @default("DRAFT")
+  publishedAt    DateTime?
+
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  postedBy       User               @relation("JobsPosted", fields: [postedByUserId], references: [id])
+  applications   Application[]
+  syndications   JobSyndication[]
+
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  deletedAt      DateTime?
+}
+
+model Application {
+  id          String     @id @default(cuid())
+  jobId       String
+  candidateId String
+  status      String     @default("APPLIED")
+  resumeUrl   String?
+  notes       String?
+
+  job         Job        @relation(fields: [jobId], references: [id])
+  candidate   User       @relation(fields: [candidateId], references: [id])
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([jobId, candidateId])
+}
+
+model Platform {
+  id             String           @id @default(cuid())
+  name           String           @unique
+  apiUrl         String?
+
+  jobSyndications JobSyndication[]
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+}
+
+model JobSyndication {
+  id         String     @id @default(cuid())
+  jobId      String
+  platformId String
+
+  status     String     @default("PENDING")
+  postedUrl  String?
+
+  job        Job        @relation(fields: [jobId], references: [id])
+  platform   Platform   @relation(fields: [platformId], references: [id])
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  deletedAt  DateTime?
+
+  @@unique([jobId, platformId])
+}
