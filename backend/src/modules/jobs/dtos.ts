@@ -20,12 +20,13 @@ export const insertable = jobSchema.omit({
   updatedAt: true,
   deletedAt: true,
 });
-export type InsertableJobData = z.infer<typeof insertable>;
 
 export const updateable = insertable.partial();
+
+export type InsertableJobData = z.infer<typeof insertable>;
 export type UpdateableJobData = z.infer<typeof updateable>;
 
+export const parseJobData = (data: unknown) => jobSchema.parse(data);
 export const parseJobId = (id: unknown) => z.string().nonempty().parse(id);
 export const parseInsertableJobData = (data: unknown) => insertable.parse(data);
 export const parseUpdateableJobData = (data: unknown) => updateable.parse(data);
-export const parseJobData = (data: unknown) => jobSchema.parse(data);

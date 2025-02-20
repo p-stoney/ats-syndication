@@ -14,26 +14,26 @@ export class HttpError extends Error implements IHttpError {
   }
 }
 
-export class BadRequest extends HttpError {
+export class BadRequestError extends HttpError {
   constructor(message = 'Bad request') {
     super(StatusCodes.BAD_REQUEST, message);
   }
 }
 
-export class MethodNotAllowed extends HttpError {
+export class ConflictError extends HttpError {
+  constructor(message = 'Conflict occurred') {
+    super(StatusCodes.CONFLICT, message);
+  }
+}
+
+export class MethodNotAllowedError extends HttpError {
   constructor(message = 'Method not allowed') {
     super(StatusCodes.METHOD_NOT_ALLOWED, message);
   }
 }
 
-export class NotFound extends HttpError {
+export class NotFoundError extends HttpError {
   constructor(message = 'Resource not found') {
     super(StatusCodes.NOT_FOUND, message);
-  }
-}
-
-export class Conflict extends HttpError {
-  constructor(message = 'Conflict occurred') {
-    super(StatusCodes.CONFLICT, message);
   }
 }
