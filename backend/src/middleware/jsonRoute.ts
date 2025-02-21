@@ -5,7 +5,7 @@ import {
   type RequestHandler,
 } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { MethodNotAllowed } from '../utils/errors/http-error';
+import { MethodNotAllowedError } from '../utils/errors/http-error';
 
 type JsonHandler<T> = (
   req: Request,
@@ -33,5 +33,5 @@ export function unsupportedRoute(
   res: Response,
   next: NextFunction
 ) {
-  next(new MethodNotAllowed());
+  next(new MethodNotAllowedError());
 }

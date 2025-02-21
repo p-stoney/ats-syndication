@@ -1,4 +1,9 @@
-import { type ErrorRequestHandler } from 'express';
+import {
+  type ErrorRequestHandler,
+  type Request,
+  type Response,
+  type NextFunction,
+} from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { ZodError } from 'zod';
 import { HttpError } from '../utils/errors/http-error';
@@ -8,9 +13,9 @@ const isTest = NODE_ENV === 'test';
 
 export const jsonErrors: ErrorRequestHandler = (
   error: HttpError,
-  _req,
-  res,
-  _next
+  _req: Request,
+  res: Response,
+  _next: NextFunction
 ) => {
   const statusCode = getErrorStatusCode(error);
 

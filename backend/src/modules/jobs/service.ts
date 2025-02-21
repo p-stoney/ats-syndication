@@ -1,56 +1,17 @@
-import { db } from '../../db';
-import { PrismaClientKnownRequestError as PrismaError } from '@prisma/client/runtime/library';
-import { ConflictError, NotFoundError } from '../../utils/errors/http-error';
+import { createService } from '../../utils/createService';
 import { InsertableJobData, UpdateableJobData } from './dtos';
 
-export class JobService {
-  static async findAll() {
-    return db.job.findMany({
-      where: { deletedAt: null },
-    });
-  }
+// Generic service implementing the basic CRUD operations
+const base = createService<'job', InsertableJobData, UpdateableJobData>('job');
 
-  static async findById(id: string) {
-    const job = await db.job.findUnique({ where: { id } });
-    if (!job) {
-      throw new NotFoundError('Job not found');
-    }
-    return job;
-  }
+export const JobService = {
+  ...base,
 
-  static async create(data: InsertableJobData) {
-    try {
-      return await db.job.create({ data });
-    } catch (error) {
-      if (error instanceof PrismaError && error.code === 'P2002') {
-        throw new ConflictError('Job already exists');
-      }
-      throw error;
+  async publishJob(id: string) {
+    const job = await this.findById(id);
+    if (job.status === 'PUBLISHED') {
+      throw new Error('Already published');
     }
-  }
-
-  static async update(id: string, data: UpdateableJobData) {
-    try {
-      return await db.job.update({ where: { id }, data });
-    } catch (error) {
-      if (error instanceof PrismaError && error.code === 'P2025') {
-        throw new NotFoundError('Job not found');
-      }
-      throw error;
-    }
-  }
-
-  static async delete(id: string) {
-    try {
-      return await db.job.update({
-        where: { id },
-        data: { deletedAt: new Date() },
-      });
-    } catch (error) {
-      if (error instanceof PrismaError && error.code === 'P2025') {
-        throw new NotFoundError('Job not found');
-      }
-      throw error;
-    }
-  }
-}
+    return base.update(id, { status: 'PUBLISHED' });
+  },
+};
