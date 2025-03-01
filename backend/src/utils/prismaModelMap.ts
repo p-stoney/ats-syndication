@@ -1,4 +1,4 @@
-import { db } from '../db'; // your PrismaClient instance
+import { db } from '../db';
 
 /**
  * List of valid model names in Prisma schema, as a union.

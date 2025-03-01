@@ -1,7 +1,9 @@
 import { createService } from '../../utils/createService';
 import { InsertableJobData, UpdateableJobData } from './dtos';
 
-// Generic service implementing the basic CRUD operations
+/**
+ * Creates a base CRUD service for the 'job' model.
+ */
 const base = createService<'job', InsertableJobData, UpdateableJobData>('job');
 
 export const JobService = {

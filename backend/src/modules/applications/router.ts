@@ -13,16 +13,18 @@ export const applicationRouter = Router();
 applicationRouter.route('/').get(
   jsonRoute(async (req) => {
     const applications = await ApplicationService.findAll();
+
     return applications;
-  })
+  }, StatusCodes.OK)
 );
 
 applicationRouter.route('/:id').get(
   jsonRoute(async (req) => {
     const validId = parseApplicationId(req.params.id);
     const application = await ApplicationService.findById(validId);
+
     return application;
-  })
+  }, StatusCodes.OK)
 );
 
 applicationRouter.route('/').post(

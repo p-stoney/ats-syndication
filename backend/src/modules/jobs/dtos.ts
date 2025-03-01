@@ -9,6 +9,7 @@ export const jobSchema = z.object({
   location: z.string().nullable().optional(),
   status: z.string().default('DRAFT'),
   publishedAt: z.date().nullable().optional(),
+
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
   deletedAt: z.date().nullable().optional(),
@@ -26,7 +27,8 @@ export const updateable = insertable.partial();
 export type InsertableJobData = z.infer<typeof insertable>;
 export type UpdateableJobData = z.infer<typeof updateable>;
 
-export const parseJobData = (data: unknown) => jobSchema.parse(data);
 export const parseJobId = (id: unknown) => z.string().nonempty().parse(id);
 export const parseInsertableJobData = (data: unknown) => insertable.parse(data);
 export const parseUpdateableJobData = (data: unknown) => updateable.parse(data);
+
+export const parseJobData = (data: unknown) => jobSchema.parse(data);

@@ -1,7 +1,9 @@
 import { createService } from '../../utils/createService';
 import { InsertableApplicationData, UpdateableApplicationData } from './dtos';
 
-// Generic service implementing the basic CRUD operations
+/**
+ * Creates a base CRUD service for the 'application' model.
+ */
 const base = createService<
   'application',
   InsertableApplicationData,

@@ -13,16 +13,18 @@ export const jobRouter = Router();
 jobRouter.route('/').get(
   jsonRoute(async (req) => {
     const jobs = await JobService.findAll();
+
     return jobs;
-  })
+  }, StatusCodes.OK)
 );
 
 jobRouter.route('/:id').get(
   jsonRoute(async (req) => {
     const validId = parseJobId(req.params.id);
     const job = await JobService.findById(validId);
+
     return job;
-  })
+  }, StatusCodes.OK)
 );
 
 jobRouter.route('/').post(
