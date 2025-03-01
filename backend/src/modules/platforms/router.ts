@@ -3,8 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import { jsonRoute } from '../../middleware/jsonRoute';
 import {
   parsePlatformId,
-  parseInsertablePlatformData,
-  parseUpdateablePlatformData,
+  parseInsertablePlatform,
+  parseUpdateablePlatform,
+  parsePlatformSearchQuery,
 } from './dtos';
 import { PlatformService } from './service';
 
@@ -29,7 +30,7 @@ platformRouter.route('/:id').get(
 
 platformRouter.route('/').post(
   jsonRoute(async (req) => {
-    const validData = parseInsertablePlatformData(req.body);
+    const validData = parseInsertablePlatform(req.body);
     const newPlatform = await PlatformService.create(validData);
 
     return newPlatform;
@@ -39,7 +40,7 @@ platformRouter.route('/').post(
 platformRouter.route('/:id').patch(
   jsonRoute(async (req) => {
     const validId = parsePlatformId(req.params.id);
-    const validData = parseUpdateablePlatformData(req.body);
+    const validData = parseUpdateablePlatform(req.body);
     const updatedPlatform = await PlatformService.update(validId, validData);
 
     return updatedPlatform;
@@ -55,9 +56,32 @@ platformRouter.route('/:id').delete(
   }, StatusCodes.OK)
 );
 
-// platformRouter.route('/:id/ping').post(
-//   jsonRoute(async (req) => {
-//     const validId = parsePlatformId(req.params.id);
-//     return PlatformService.pingPlatform(validId);
-//   }, StatusCodes.OK)
-// );
+platformRouter.post(
+  '/:id/ping',
+  jsonRoute(async (req) => {
+    const validId = parsePlatformId(req.params.id);
+    const result = await PlatformService.pingPlatform(validId);
+
+    return result;
+  }, StatusCodes.OK)
+);
+
+platformRouter.patch(
+  '/:id/deactivate',
+  jsonRoute(async (req) => {
+    const validId = parsePlatformId(req.params.id);
+    const deactivated = await PlatformService.delete(validId);
+
+    return deactivated;
+  }, StatusCodes.OK)
+);
+
+platformRouter.get(
+  '/search',
+  jsonRoute(async (req) => {
+    const filters = parsePlatformSearchQuery(req.query);
+    const results = await PlatformService.searchPlatforms(filters);
+
+    return results;
+  }, StatusCodes.OK)
+);

@@ -4,8 +4,9 @@ import { jsonRoute } from '../../middleware/jsonRoute';
 import { OrgService } from './service';
 import {
   parseOrgId,
-  parseInsertableOrgData,
-  parseUpdateableOrgData,
+  parseInsertableOrg,
+  parseUpdateableOrg,
+  parseOrgSearchQuery,
 } from './dtos';
 import { parseUserId } from '../users/dtos';
 
@@ -30,7 +31,7 @@ orgRouter.route('/:id').get(
 
 orgRouter.route('/').post(
   jsonRoute(async (req) => {
-    const validData = parseInsertableOrgData(req.body);
+    const validData = parseInsertableOrg(req.body);
     const newOrg = await OrgService.create(validData);
 
     return newOrg;
@@ -40,7 +41,7 @@ orgRouter.route('/').post(
 orgRouter.route('/:id').patch(
   jsonRoute(async (req) => {
     const validId = parseOrgId(req.params.id);
-    const validData = parseUpdateableOrgData(req.body);
+    const validData = parseUpdateableOrg(req.body);
     const updatedOrg = await OrgService.update(validId, validData);
 
     return updatedOrg;
@@ -53,6 +54,17 @@ orgRouter.route('/:id').delete(
     const deletedOrg = await OrgService.delete(validId);
 
     return deletedOrg;
+  }, StatusCodes.OK)
+);
+
+orgRouter.patch(
+  '/:id/rename',
+  jsonRoute(async (req) => {
+    const validOrgId = parseOrgId(req.params.id);
+    const newName = req.body.newName;
+    const updated = await OrgService.renameOrg(validOrgId, newName);
+
+    return updated;
   }, StatusCodes.OK)
 );
 
@@ -82,5 +94,14 @@ orgRouter.route('/:id/members/:userId').delete(
     const deletedMember = OrgService.removeMember(validOrgId, validUserId);
 
     return deletedMember;
+  }, StatusCodes.OK)
+);
+
+orgRouter.get(
+  '/search',
+  jsonRoute(async (req) => {
+    const filters = parseOrgSearchQuery(req.query);
+    const results = await OrgService.searchOrgs(filters);
+    return results;
   }, StatusCodes.OK)
 );

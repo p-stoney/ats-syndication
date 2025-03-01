@@ -25,6 +25,10 @@ export function createService<M extends ModelName, TCreate, TUpdate>(
       });
     },
 
+    async findMany(filter: Record<string, unknown>) {
+      return delegate.findMany({ where: { ...findAllFilter, ...filter } });
+    },
+
     async findById(id: string) {
       const model = await delegate.findUnique({ where: { id } });
       if (!model) {
@@ -51,9 +55,6 @@ export function createService<M extends ModelName, TCreate, TUpdate>(
           data,
         });
       } catch (error) {
-        if (error instanceof PrismaError && error.code === 'P2002') {
-          throw new ConflictError(`${capitalizedModel} already exists`);
-        }
         throw error;
       }
     },

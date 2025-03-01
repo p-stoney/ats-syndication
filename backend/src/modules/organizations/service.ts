@@ -1,6 +1,6 @@
 import { db } from '../../db';
 import { createService } from '../../utils/createService';
-import { InsertableOrgData, UpdateableOrgData } from './dtos';
+import { InsertableOrgData, UpdateableOrgData, OrgSearchFilters } from './dtos';
 import { PrismaClientKnownRequestError as PrismaError } from '@prisma/client/runtime/library';
 import { ConflictError } from '../../utils/errors/http-error';
 
@@ -15,6 +15,24 @@ const base = createService<
 
 export const OrgService = {
   ...base,
+
+  async searchOrgs(filters: OrgSearchFilters) {
+    const where: any = { deletedAt: null };
+    if (filters.name) {
+      where.name = { contains: filters.name, mode: 'insensitive' };
+    }
+    return this.findMany(where);
+  },
+
+  async renameOrg(orgId: string, newName: string) {
+    const org = await this.findById(orgId);
+    if (org.name === newName) {
+      throw new ConflictError(
+        `Organization with ID ${orgId} already has the name ${newName}`
+      );
+    }
+    return this.update(orgId, { name: newName });
+  },
 
   async listMembers(orgId: string) {
     const members = await db.organizationUser.findMany({

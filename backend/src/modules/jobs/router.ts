@@ -3,9 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import { jsonRoute } from '../../middleware/jsonRoute';
 import {
   parseJobId,
-  parseInsertableJobData,
-  parseUpdateableJobData,
-  parseUpdateableSyndData,
+  parseInsertableJob,
+  parseUpdateableJob,
+  parseUpdateableSynd,
   parseJobSearchQuery,
 } from './dtos';
 import { parseOrgId } from '../organizations/dtos';
@@ -33,7 +33,7 @@ jobRouter.route('/:id').get(
 
 jobRouter.route('/').post(
   jsonRoute(async (req) => {
-    const validData = parseInsertableJobData(req.body);
+    const validData = parseInsertableJob(req.body);
     const newJob = await JobService.create(validData);
 
     return newJob;
@@ -43,7 +43,7 @@ jobRouter.route('/').post(
 jobRouter.route('/:id').patch(
   jsonRoute(async (req) => {
     const validId = parseJobId(req.params.id);
-    const validData = parseUpdateableJobData(req.body);
+    const validData = parseUpdateableJob(req.body);
     const updatedJob = await JobService.update(validId, validData);
 
     return updatedJob;
@@ -59,12 +59,21 @@ jobRouter.route('/:id').delete(
   }, StatusCodes.OK)
 );
 
-jobRouter.route('/organization/:orgId').get(
+jobRouter.route('/:id/publish').patch(
   jsonRoute(async (req) => {
-    const orgId = parseOrgId(req.params.orgId);
-    const jobs = await JobService.listByOrg(orgId);
+    const validId = parseJobId(req.params.id);
+    const updatedJob = await JobService.publishJob(validId);
 
-    return jobs;
+    return updatedJob;
+  }, StatusCodes.OK)
+);
+
+jobRouter.route('/:id/close').patch(
+  jsonRoute(async (req) => {
+    const validId = parseJobId(req.params.id);
+    const updatedJob = await JobService.closeJob(validId);
+
+    return updatedJob;
   }, StatusCodes.OK)
 );
 
@@ -80,8 +89,8 @@ jobRouter.route('/:id/assign-org').patch(
 
 jobRouter.route('/:jobId/syndications').get(
   jsonRoute(async (req) => {
-    const validJobId = parseJobId(req.params.jobId);
-    const syns = await JobService.listSyndications(validJobId);
+    const validId = parseJobId(req.params.jobId);
+    const syns = await JobService.listSyndications(validId);
 
     return syns;
   }, StatusCodes.OK)
@@ -101,7 +110,7 @@ jobRouter.route('/:jobId/syndications/:platformId').patch(
   jsonRoute(async (req) => {
     const validJobId = parseJobId(req.params.jobId);
     const validPlatformId = parsePlatformId(req.params.platformId);
-    const updates = parseUpdateableSyndData(req.body);
+    const updates = parseUpdateableSynd(req.body);
     const updatedSyn = await JobService.updateSyndication(
       validJobId,
       validPlatformId,

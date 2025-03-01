@@ -3,8 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import { jsonRoute } from '../../middleware/jsonRoute';
 import {
   parseApplicationId,
-  parseInsertableApplicationData,
-  parseUpdateableApplicationData,
+  parseInsertableApplication,
+  parseUpdateableApplication,
+  parseAppSearchQuery,
 } from './dtos';
 import { AppsService } from './service';
 
@@ -12,45 +13,65 @@ export const appsRouter = Router();
 
 appsRouter.route('/').get(
   jsonRoute(async (req) => {
-    const applications = await AppsService.findAll();
+    const apps = await AppsService.findAll();
 
-    return applications;
+    return apps;
   }, StatusCodes.OK)
 );
 
 appsRouter.route('/:id').get(
   jsonRoute(async (req) => {
     const validId = parseApplicationId(req.params.id);
-    const application = await AppsService.findById(validId);
+    const app = await AppsService.findById(validId);
 
-    return application;
+    return app;
   }, StatusCodes.OK)
 );
 
 appsRouter.route('/').post(
   jsonRoute(async (req) => {
-    const validData = parseInsertableApplicationData(req.body);
-    const newApplication = await AppsService.create(validData);
+    const validData = parseInsertableApplication(req.body);
+    const newApp = await AppsService.create(validData);
 
-    return newApplication;
+    return newApp;
   }, StatusCodes.CREATED)
 );
 
 appsRouter.route('/:id').patch(
   jsonRoute(async (req) => {
     const validId = parseApplicationId(req.params.id);
-    const validData = parseUpdateableApplicationData(req.body);
-    const updatedApplication = await AppsService.update(validId, validData);
+    const validData = parseUpdateableApplication(req.body);
+    const updatedApp = await AppsService.update(validId, validData);
 
-    return updatedApplication;
+    return updatedApp;
   }, StatusCodes.OK)
 );
 
 appsRouter.route('/:id').delete(
   jsonRoute(async (req) => {
     const validId = parseApplicationId(req.params.id);
-    const deletedApplication = await AppsService.delete(validId);
+    const deletedApp = await AppsService.delete(validId);
 
-    return deletedApplication;
+    return deletedApp;
+  }, StatusCodes.OK)
+);
+
+appsRouter.route('/:id/review').patch(
+  jsonRoute(async (req) => {
+    const validId = parseApplicationId(req.params.id);
+    const newStatus = req.body.status;
+    const reviewedApp = await AppsService.reviewApplication(validId, newStatus);
+
+    return reviewedApp;
+  }, StatusCodes.OK)
+);
+
+appsRouter.get(
+  '/search',
+  jsonRoute(async (req) => {
+    const filters = parseAppSearchQuery(req.query);
+    const results = await AppsService.searchApplications(filters);
+
+    return results;
   }, StatusCodes.OK)
 );

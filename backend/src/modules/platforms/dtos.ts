@@ -10,23 +10,29 @@ export const platformSchema = z.object({
   deletedAt: z.date().nullable().optional(),
 });
 
-export const insertable = platformSchema.omit({
+export const insertablePlatform = platformSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
 });
 
-export const updateable = insertable.partial();
+export const updateablePlatform = insertablePlatform.partial();
 
-export type InsertablePlatformData = z.infer<typeof insertable>;
-export type UpdateablePlatformData = z.infer<typeof updateable>;
+export const parsePlatform = (data: unknown) => platformSchema.parse(data);
+export const parsePlatformId = (id: unknown) => z.string().nonempty().parse(id);
+export const parseInsertablePlatform = (data: unknown) =>
+  insertablePlatform.parse(data);
+export const parseUpdateablePlatform = (data: unknown) =>
+  updateablePlatform.parse(data);
 
-export const parsePlatformId = (raw: unknown) =>
-  z.string().nonempty().parse(raw);
-export const parseInsertablePlatformData = (raw: unknown) =>
-  insertable.parse(raw);
-export const parseUpdateablePlatformData = (raw: unknown) =>
-  updateable.parse(raw);
+export const platformSearchQuery = z.object({
+  name: z.string().optional(),
+});
 
-export const parsePlatformData = (raw: unknown) => platformSchema.parse(raw);
+export const parsePlatformSearchQuery = (query: unknown) =>
+  platformSearchQuery.parse(query);
+
+export type InsertablePlatformData = z.infer<typeof insertablePlatform>;
+export type UpdateablePlatformData = z.infer<typeof updateablePlatform>;
+export type PlatformSearchFilters = z.infer<typeof platformSearchQuery>;

@@ -1,6 +1,11 @@
 import { db } from '@backend/db';
 import { createService } from '../../utils/createService';
-import { InsertableJobData, UpdateableJobData } from './dtos';
+import {
+  InsertableJobData,
+  UpdateableJobData,
+  UpdateableSyndData,
+  JobSearchFilters,
+} from './dtos';
 import { PrismaClientKnownRequestError as PrismaError } from '@prisma/client/runtime/library';
 import { ConflictError } from '../../utils/errors/http-error';
 
@@ -12,25 +17,38 @@ const base = createService<'job', InsertableJobData, UpdateableJobData>('job');
 export const JobService = {
   ...base,
 
-  async listByOrg(orgId: string) {
-    const jobs = await db.job.findMany({
-      where: {
-        orgId,
-        deletedAt: null,
-      },
-    });
-    return jobs;
+  async searchJobs(filters: JobSearchFilters) {
+    const where: any = { deletedAt: null };
+
+    if (filters.title)
+      where.title = { contains: filters.title, mode: 'insensitive' };
+    if (filters.location)
+      where.location = { contains: filters.location, mode: 'insensitive' };
+    if (filters.status) where.status = filters.status;
+    if (filters.orgId) where.orgId = filters.orgId;
+    if (filters.postedByUserId) where.postedByUserId = filters.postedByUserId;
+
+    return this.findMany(where);
+  },
+
+  async publishJob(jobId: string) {
+    const job = await this.findById(jobId);
+    if (job.status === 'PUBLISHED') {
+      throw new ConflictError(`Job with ${jobId} is already published`);
+    }
+    return this.update(jobId, { status: 'PUBLISHED', publishedAt: new Date() });
+  },
+
+  async closeJob(jobId: string) {
+    const job = await this.findById(jobId);
+    if (job.status === 'CLOSED') {
+      throw new ConflictError(`Job with ${jobId} is already closed`);
+    }
+    return this.update(jobId, { status: 'CLOSED' });
   },
 
   async assignOrg(jobId: string, orgId: string) {
-    try {
-      return db.job.update({
-        where: { id: jobId },
-        data: { orgId },
-      });
-    } catch (error) {
-      throw error;
-    }
+    return this.update(jobId, { orgId });
   },
 
   async listSyndications(jobId: string) {
@@ -46,6 +64,10 @@ export const JobService = {
 
   async addSyndication(jobId: string, platformId: string) {
     try {
+      const job = await this.findById(jobId);
+      if (job.status !== 'PUBLISHED') {
+        throw new ConflictError(`Job with ${jobId} is not published`);
+      }
       const newSynd = await db.jobSyndication.create({
         data: {
           jobId,
@@ -67,7 +89,7 @@ export const JobService = {
   async updateSyndication(
     jobId: string,
     platformId: string,
-    updates: { status?: string; postedUrl?: string }
+    updates: UpdateableSyndData
   ) {
     try {
       const updatedSynd = await db.jobSyndication.update({
@@ -102,33 +124,5 @@ export const JobService = {
     } catch (error) {
       throw error;
     }
-  },
-
-  async searchJobs(filters: {
-    title?: string;
-    location?: string;
-    status?: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
-    orgId?: string;
-    postedByUserId?: string;
-  }) {
-    const where: any = { deletedAt: null };
-
-    if (filters.title) {
-      where.title = { contains: filters.title, mode: 'insensitive' };
-    }
-    if (filters.location) {
-      where.location = { contains: filters.location, mode: 'insensitive' };
-    }
-    if (filters.status) {
-      where.status = filters.status;
-    }
-    if (filters.orgId) {
-      where.orgId = filters.orgId;
-    }
-    if (filters.postedByUserId) {
-      where.postedByUserId = filters.postedByUserId;
-    }
-
-    return db.job.findMany({ where });
   },
 };

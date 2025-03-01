@@ -3,8 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import { jsonRoute } from '../../middleware/jsonRoute';
 import {
   parseUserId,
-  parseInsertableUserData,
-  parseUpdateableUserData,
+  parseInsertableUser,
+  parseUpdateableUser,
+  parseUserSearchQuery,
 } from './dtos';
 import { UserService } from './service';
 
@@ -29,7 +30,7 @@ userRouter.route('/:id').get(
 
 userRouter.route('/').post(
   jsonRoute(async (req) => {
-    const validData = parseInsertableUserData(req.body);
+    const validData = parseInsertableUser(req.body);
     const newUser = await UserService.create(validData);
 
     return newUser;
@@ -39,7 +40,7 @@ userRouter.route('/').post(
 userRouter.route('/:id').patch(
   jsonRoute(async (req) => {
     const validId = parseUserId(req.params.id);
-    const validData = parseUpdateableUserData(req.body);
+    const validData = parseUpdateableUser(req.body);
     const updatedUser = await UserService.update(validId, validData);
 
     return updatedUser;
@@ -55,10 +56,23 @@ userRouter.route('/:id').delete(
   }, StatusCodes.OK)
 );
 
-userRouter.route('/:id/promote').patch(
+userRouter.post(
+  '/:id/setRole',
   jsonRoute(async (req) => {
     const validId = parseUserId(req.params.id);
+    const newRole = req.body.role;
+    const updatedUser = await UserService.setRole(validId, newRole);
 
-    return UserService.promoteToEmployer(validId);
+    return updatedUser;
+  }, StatusCodes.OK)
+);
+
+userRouter.get(
+  '/search',
+  jsonRoute(async (req) => {
+    const filters = parseUserSearchQuery(req.query);
+    const results = await UserService.searchUsers(filters);
+
+    return results;
   }, StatusCodes.OK)
 );

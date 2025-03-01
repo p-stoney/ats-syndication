@@ -9,20 +9,27 @@ export const organizationSchema = z.object({
   deletedAt: z.date().nullable().optional(),
 });
 
-export const insertable = organizationSchema.omit({
+export const insertableOrg = organizationSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
 });
 
-export const updateable = insertable.partial();
+export const updateableOrg = insertableOrg.partial();
 
-export type InsertableOrgData = z.infer<typeof insertable>;
-export type UpdateableOrgData = z.infer<typeof updateable>;
+export const parseOrg = (data: unknown) => organizationSchema.parse(data);
+export const parseOrgId = (id: unknown) => z.string().nonempty().parse(id);
+export const parseInsertableOrg = (data: unknown) => insertableOrg.parse(data);
+export const parseUpdateableOrg = (data: unknown) => updateableOrg.parse(data);
 
-export const parseOrgId = (raw: unknown) => z.string().nonempty().parse(raw);
-export const parseInsertableOrgData = (raw: unknown) => insertable.parse(raw);
-export const parseUpdateableOrgData = (raw: unknown) => updateable.parse(raw);
+export const orgSearchQuery = z.object({
+  name: z.string().optional(),
+});
 
-export const parseOrgData = (raw: unknown) => organizationSchema.parse(raw);
+export const parseOrgSearchQuery = (query: unknown) =>
+  orgSearchQuery.parse(query);
+
+export type InsertableOrgData = z.infer<typeof insertableOrg>;
+export type UpdateableOrgData = z.infer<typeof updateableOrg>;
+export type OrgSearchFilters = z.infer<typeof orgSearchQuery>;
