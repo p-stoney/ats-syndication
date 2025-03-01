@@ -6,53 +6,50 @@ import {
   parseInsertableApplicationData,
   parseUpdateableApplicationData,
 } from './dtos';
-import { ApplicationService } from './service';
+import { AppsService } from './service';
 
-export const applicationRouter = Router();
+export const appsRouter = Router();
 
-applicationRouter.route('/').get(
+appsRouter.route('/').get(
   jsonRoute(async (req) => {
-    const applications = await ApplicationService.findAll();
+    const applications = await AppsService.findAll();
 
     return applications;
   }, StatusCodes.OK)
 );
 
-applicationRouter.route('/:id').get(
+appsRouter.route('/:id').get(
   jsonRoute(async (req) => {
     const validId = parseApplicationId(req.params.id);
-    const application = await ApplicationService.findById(validId);
+    const application = await AppsService.findById(validId);
 
     return application;
   }, StatusCodes.OK)
 );
 
-applicationRouter.route('/').post(
+appsRouter.route('/').post(
   jsonRoute(async (req) => {
     const validData = parseInsertableApplicationData(req.body);
-    const newApplication = await ApplicationService.create(validData);
+    const newApplication = await AppsService.create(validData);
 
     return newApplication;
   }, StatusCodes.CREATED)
 );
 
-applicationRouter.route('/:id').patch(
+appsRouter.route('/:id').patch(
   jsonRoute(async (req) => {
     const validId = parseApplicationId(req.params.id);
     const validData = parseUpdateableApplicationData(req.body);
-    const updatedApplication = await ApplicationService.update(
-      validId,
-      validData
-    );
+    const updatedApplication = await AppsService.update(validId, validData);
 
     return updatedApplication;
   }, StatusCodes.OK)
 );
 
-applicationRouter.route('/:id').delete(
+appsRouter.route('/:id').delete(
   jsonRoute(async (req) => {
     const validId = parseApplicationId(req.params.id);
-    const deletedApplication = await ApplicationService.delete(validId);
+    const deletedApplication = await AppsService.delete(validId);
 
     return deletedApplication;
   }, StatusCodes.OK)

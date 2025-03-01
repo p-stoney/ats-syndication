@@ -10,7 +10,7 @@ const base = createService<
   UpdateableApplicationData
 >('application');
 
-export const ApplicationService = {
+export const AppsService = {
   ...base,
 
   // Model specific methods...

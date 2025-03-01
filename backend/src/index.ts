@@ -1,10 +1,10 @@
 import serverless from 'serverless-http';
-import { app } from './app';
+import { createApp } from './app';
+
+const app = createApp();
 
 export const handler = serverless(app);
 
 if (require.main === module) {
-  app.listen(3000, () => {
-    console.log('Listening locally on port 3000...');
-  });
+  app.listen(3000, () => console.log('Listening on 3000...'));
 }

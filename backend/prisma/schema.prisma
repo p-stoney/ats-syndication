@@ -14,6 +14,18 @@ enum Role {
   ADMIN
 }
 
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum SyndicationStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 // ----------- Models -----------
 
 model User {
@@ -47,32 +59,32 @@ model Organization {
 
 model OrganizationUser {
   id             String         @id @default(cuid())
-  organizationId String
+  orgId String
   userId         String
 
-  organization   Organization    @relation(fields: [organizationId], references: [id])
+  organization   Organization    @relation(fields: [orgId], references: [id])
   user           User            @relation(fields: [userId], references: [id])
 
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   deletedAt      DateTime?
 
-  @@unique([organizationId, userId])
+  @@unique([orgId, userId])
 }
 
 model Job {
   id             String             @id @default(cuid())
 
-  organizationId String
+  orgId String
   postedByUserId String
 
   title          String
   description    String?
   location       String?
-  status         String             @default("DRAFT")
+  status         JobStatus             @default(DRAFT)
   publishedAt    DateTime?
 
-  organization   Organization       @relation(fields: [organizationId], references: [id])
+  organization   Organization       @relation(fields: [orgId], references: [id])
   postedBy       User               @relation("JobsPosted", fields: [postedByUserId], references: [id])
   applications   Application[]
   syndications   JobSyndication[]
@@ -117,7 +129,7 @@ model JobSyndication {
   jobId      String
   platformId String
 
-  status     String     @default("PENDING")
+  status     SyndicationStatus     @default(PENDING)
   postedUrl  String?
 
   job        Job        @relation(fields: [jobId], references: [id])

@@ -1,61 +1,86 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { jsonRoute } from '../../middleware/jsonRoute';
-import { OrganizationService } from './service';
+import { OrgService } from './service';
 import {
-  parseOrganizationId,
-  parseInsertableOrganizationData,
-  parseUpdateableOrganizationData,
+  parseOrgId,
+  parseInsertableOrgData,
+  parseUpdateableOrgData,
 } from './dtos';
+import { parseUserId } from '../users/dtos';
 
-export const organizationRouter = Router();
+export const orgRouter = Router();
 
-organizationRouter.route('/').get(
+orgRouter.route('/').get(
   jsonRoute(async () => {
-    const organizations = await OrganizationService.findAll();
+    const orgs = await OrgService.findAll();
 
-    return organizations;
+    return orgs;
   }, StatusCodes.OK)
 );
 
-organizationRouter.route('/:id').get(
+orgRouter.route('/:id').get(
   jsonRoute(async (req) => {
-    const validId = parseOrganizationId(req.params.id);
-    const organization = await OrganizationService.findById(validId);
+    const validId = parseOrgId(req.params.id);
+    const org = await OrgService.findById(validId);
 
-    return organization;
+    return org;
   }, StatusCodes.OK)
 );
 
-organizationRouter.route('/').post(
+orgRouter.route('/').post(
   jsonRoute(async (req) => {
-    const validData = parseInsertableOrganizationData(req.body);
-    const newOrganization = await OrganizationService.create(validData);
+    const validData = parseInsertableOrgData(req.body);
+    const newOrg = await OrgService.create(validData);
 
-    return newOrganization;
+    return newOrg;
   }, StatusCodes.CREATED)
 );
 
-organizationRouter.route('/:id').patch(
+orgRouter.route('/:id').patch(
   jsonRoute(async (req) => {
-    const validId = parseOrganizationId(req.params.id);
-    const validData = parseUpdateableOrganizationData(req.body);
-    const updatedOrganization = await OrganizationService.update(
-      validId,
-      validData
-    );
+    const validId = parseOrgId(req.params.id);
+    const validData = parseUpdateableOrgData(req.body);
+    const updatedOrg = await OrgService.update(validId, validData);
 
-    return updatedOrganization;
+    return updatedOrg;
   }, StatusCodes.OK)
 );
 
-organizationRouter.route('/:id').delete(
+orgRouter.route('/:id').delete(
   jsonRoute(async (req) => {
-    const validId = parseOrganizationId(req.params.id);
-    const deletedOrganization = await OrganizationService.delete(validId);
+    const validId = parseOrgId(req.params.id);
+    const deletedOrg = await OrgService.delete(validId);
 
-    return deletedOrganization;
+    return deletedOrg;
   }, StatusCodes.OK)
 );
 
-// domain-specific routes? e.g. "/:id/addUser"
+orgRouter.route('/:id/members').get(
+  jsonRoute(async (req) => {
+    const validOrgId = parseOrgId(req.params.orgId);
+    const members = await OrgService.listMembers(validOrgId);
+
+    return members;
+  }, StatusCodes.OK)
+);
+
+orgRouter.route('/:id/members').post(
+  jsonRoute(async (req) => {
+    const validOrgId = parseOrgId(req.params.orgId);
+    const validUserId = parseUserId(req.body.userId);
+    const newMember = await OrgService.addMember(validOrgId, validUserId);
+
+    return newMember;
+  }, StatusCodes.CREATED)
+);
+
+orgRouter.route('/:id/members/:userId').delete(
+  jsonRoute(async (req) => {
+    const validOrgId = parseOrgId(req.params.orgId);
+    const validUserId = parseUserId(req.params.userId);
+    const deletedMember = OrgService.removeMember(validOrgId, validUserId);
+
+    return deletedMember;
+  }, StatusCodes.OK)
+);

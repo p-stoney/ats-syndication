@@ -18,15 +18,11 @@ export const insertable = organizationSchema.omit({
 
 export const updateable = insertable.partial();
 
-export type InsertableOrganizationData = z.infer<typeof insertable>;
-export type UpdateableOrganizationData = z.infer<typeof updateable>;
+export type InsertableOrgData = z.infer<typeof insertable>;
+export type UpdateableOrgData = z.infer<typeof updateable>;
 
-export const parseOrganizationId = (raw: unknown) =>
-  z.string().nonempty().parse(raw);
-export const parseInsertableOrganizationData = (raw: unknown) =>
-  insertable.parse(raw);
-export const parseUpdateableOrganizationData = (raw: unknown) =>
-  updateable.parse(raw);
+export const parseOrgId = (raw: unknown) => z.string().nonempty().parse(raw);
+export const parseInsertableOrgData = (raw: unknown) => insertable.parse(raw);
+export const parseUpdateableOrgData = (raw: unknown) => updateable.parse(raw);
 
-export const parseOrganizationData = (raw: unknown) =>
-  organizationSchema.parse(raw);
+export const parseOrgData = (raw: unknown) => organizationSchema.parse(raw);

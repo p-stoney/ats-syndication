@@ -5,7 +5,11 @@ import {
   parseJobId,
   parseInsertableJobData,
   parseUpdateableJobData,
+  parseUpdateableSyndData,
+  parseJobSearchQuery,
 } from './dtos';
+import { parseOrgId } from '../organizations/dtos';
+import { parsePlatformId } from '../platforms/dtos';
 import { JobService } from './service';
 
 export const jobRouter = Router();
@@ -52,5 +56,81 @@ jobRouter.route('/:id').delete(
     const deletedJob = await JobService.delete(validId);
 
     return deletedJob;
+  }, StatusCodes.OK)
+);
+
+jobRouter.route('/organization/:orgId').get(
+  jsonRoute(async (req) => {
+    const orgId = parseOrgId(req.params.orgId);
+    const jobs = await JobService.listByOrg(orgId);
+
+    return jobs;
+  }, StatusCodes.OK)
+);
+
+jobRouter.route('/:id/assign-org').patch(
+  jsonRoute(async (req) => {
+    const validJobId = parseJobId(req.params.id);
+    const validOrgId = parseOrgId(req.body.orgId);
+    const updated = await JobService.assignOrg(validJobId, validOrgId);
+
+    return updated;
+  }, StatusCodes.OK)
+);
+
+jobRouter.route('/:jobId/syndications').get(
+  jsonRoute(async (req) => {
+    const validJobId = parseJobId(req.params.jobId);
+    const syns = await JobService.listSyndications(validJobId);
+
+    return syns;
+  }, StatusCodes.OK)
+);
+
+jobRouter.route('/:jobId/syndications').post(
+  jsonRoute(async (req) => {
+    const validJobId = parseJobId(req.params.jobId);
+    const validPlatformId = parsePlatformId(req.body.platformId);
+    const newSyn = await JobService.addSyndication(validJobId, validPlatformId);
+
+    return newSyn;
+  }, StatusCodes.CREATED)
+);
+
+jobRouter.route('/:jobId/syndications/:platformId').patch(
+  jsonRoute(async (req) => {
+    const validJobId = parseJobId(req.params.jobId);
+    const validPlatformId = parsePlatformId(req.params.platformId);
+    const updates = parseUpdateableSyndData(req.body);
+    const updatedSyn = await JobService.updateSyndication(
+      validJobId,
+      validPlatformId,
+      updates
+    );
+
+    return updatedSyn;
+  }, StatusCodes.OK)
+);
+
+jobRouter.route('/:jobId/syndications/:platformId').delete(
+  jsonRoute(async (req) => {
+    const validJobId = parseJobId(req.params.jobId);
+    const validPlatformId = parsePlatformId(req.params.platformId);
+    const deletedSyn = await JobService.removeSyndication(
+      validJobId,
+      validPlatformId
+    );
+
+    return deletedSyn;
+  }, StatusCodes.OK)
+);
+
+jobRouter.get(
+  '/search',
+  jsonRoute(async (req) => {
+    const filters = parseJobSearchQuery(req.query);
+    const results = await JobService.searchJobs(filters);
+
+    return results;
   }, StatusCodes.OK)
 );
