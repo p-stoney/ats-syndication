@@ -33,74 +33,98 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum ExternalPlatform {
+  INDEED
+  LINKEDIN
+}
+
 // ----------- Models -----------
 
 model User {
-  id          String           @id @default(cuid())
-  cognitoSub  String?          @unique
-  email       String?          @unique
-  firstName   String?
-  lastName    String?
-  role        Role             @default(CANDIDATE)
+  id         String  @id @default(cuid())
+  cognitoSub String? @unique
+  email      String? @unique
+  firstName  String?
+  lastName   String?
+  role       Role    @default(CANDIDATE)
 
-  organizationMemberships      OrganizationUser[]
-  jobsPosted  Job[]            @relation("JobsPosted")
-  applications Application[]
+  jobsPosted              Job[]              @relation("JobsPosted")
+  applications            Application[]
+  organizationMemberships OrganizationUser[]
+  UserExternalAuth UserExternalAuth[]
 
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  deletedAt   DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  deletedAt        DateTime?
+}
+
+model UserExternalAuth {
+  id       String           @id @default(cuid())
+  userId   String
+  platform ExternalPlatform
+
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([userId, platform])
 }
 
 model Organization {
-  id        String             @id @default(cuid())
-  name      String             @unique
+  id   String @id @default(cuid())
+  name String @unique
 
-  members   OrganizationUser[]
-  jobs      Job[]
+  members OrganizationUser[]
+  jobs    Job[]
 
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 }
 
 model OrganizationUser {
-  id             String        @id @default(cuid())
-  orgId          String
-  userId         String
+  id     String @id @default(cuid())
+  orgId  String
+  userId String
 
-  organization   Organization  @relation(fields: [orgId], references: [id])
-  user           User          @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [orgId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  deletedAt      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@unique([orgId, userId])
 }
 
 model Job {
-  id             String        @id @default(cuid())
+  id             String    @id @default(cuid())
   orgId          String
   postedByUserId String
   title          String
   description    String?
   location       String?
-  status         JobStatus     @default(DRAFT)
+  status         JobStatus @default(DRAFT)
   publishedAt    DateTime?
 
-  organization   Organization       @relation(fields: [orgId], references: [id])
-  postedBy       User               @relation("JobsPosted", fields: [postedByUserId], references: [id])
-  applications   Application[]
-  syndications   JobSyndication[]
+  organization Organization     @relation(fields: [orgId], references: [id])
+  postedBy     User             @relation("JobsPosted", fields: [postedByUserId], references: [id])
+  applications Application[]
+  syndications JobSyndication[]
 
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  deletedAt      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Application {
-  id          String     @id @default(cuid())
+  id          String            @id @default(cuid())
   jobId       String
   candidateId String
   platformId  String?
@@ -108,45 +132,45 @@ model Application {
   resumeUrl   String?
   notes       String?
 
-  job         Job        @relation(fields: [jobId], references: [id])
-  candidate   User       @relation(fields: [candidateId], references: [id])
-  platform    Platform?  @relation(fields: [platformId], references: [id])
+  job       Job       @relation(fields: [jobId], references: [id])
+  candidate User      @relation(fields: [candidateId], references: [id])
+  platform  Platform? @relation(fields: [platformId], references: [id])
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  deletedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@unique([jobId, candidateId])
   @@index([platformId])
 }
 
 model Platform {
-  id             String           @id @default(cuid())
-  name           String           @unique
-  apiUrl         String?
+  id     String  @id @default(cuid())
+  name   String  @unique
+  apiUrl String?
 
   applications    Application[]
   jobSyndications JobSyndication[]
 
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  deletedAt      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model JobSyndication {
-  id         String     @id @default(cuid())
+  id         String @id @default(cuid())
   jobId      String
   platformId String
 
-  status     SyndicationStatus     @default(PENDING)
-  postedUrl  String?
+  status    SyndicationStatus @default(PENDING)
+  postedUrl String?
 
-  job        Job        @relation(fields: [jobId], references: [id])
-  platform   Platform   @relation(fields: [platformId], references: [id])
+  job      Job      @relation(fields: [jobId], references: [id])
+  platform Platform @relation(fields: [platformId], references: [id])
 
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  deletedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@unique([jobId, platformId])
 }
