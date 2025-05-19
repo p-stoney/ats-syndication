@@ -1,0 +1,1 @@
+This repository is a work-in-progress application for ATS syndication. I am developing this simultaneous to learning the material for the AWS Solutions Architect and AWS Developer courses, as I've always found it beneficial to have a concrete project to work through while learning new concepts.
